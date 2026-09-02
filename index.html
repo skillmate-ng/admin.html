@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Skill Mate — Admin Console</title>
+<meta name="description" content="Admin console for Skill Mate: verify businesses, remove fake listings, manage reports and users."/>
+<meta name="theme-color" content="#ffffff" />
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Manrope:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#ffffff;--surface:#ffffff;--surface-2:#f4f6f9;--line:#e7ebf0;--text:#12181f;--muted:#69737f;
+--primary:#2f5eff;--primary-2:#00c2a8;--accent:#ffb400;--danger:#e6484f}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Manrope,sans-serif}
+h1,h2,h3{font-family:Sora,sans-serif;margin:0;letter-spacing:-.02em}
+.wrap{width:min(1200px,94vw);margin:0 auto}
+header{border-bottom:1px solid var(--line);padding:16px 0;background:rgba(255,255,255,.92);position:sticky;top:0;z-index:5;backdrop-filter:blur(10px)}
+.spread{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.logo{width:34px;height:34px;border-radius:11px;background:linear-gradient(135deg,var(--primary),var(--primary-2));display:grid;place-items:center;color:#fff;font-weight:800}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.btn{border:0;cursor:pointer;font-family:inherit;font-weight:700;font-size:13px;padding:9px 14px;border-radius:10px;background:linear-gradient(135deg,var(--primary),var(--primary-2));color:#fff}
+.btn.ghost{background:transparent;border:1px solid var(--line);color:var(--text)}
+.btn.danger{background:var(--danger);color:#fff}
+.btn.gold{background:var(--accent);color:#3a2900}
+input,select{padding:11px 13px;border-radius:11px;border:1px solid var(--line);background:var(--surface-2);color:var(--text);font-family:inherit;outline:none}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:20px;margin:18px 0;box-shadow:0 16px 40px -26px rgba(20,30,60,.20)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-top:20px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:0 16px 40px -26px rgba(20,30,60,.20)}
+.kpi b{font-family:Sora;font-size:26px;display:block}.kpi span{color:var(--muted);font-size:13px}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th,td{text-align:left;padding:11px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
+th{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+.badge{padding:4px 9px;border-radius:999px;font-size:11.5px;font-weight:700;background:var(--surface-2);color:var(--muted)}
+.badge.ok{background:rgba(47,94,255,.10);color:var(--primary)}
+.badge.gold{background:rgba(255,180,0,.15);color:#a06a00}
+.badge.red{background:rgba(230,72,79,.12);color:var(--danger)}
+.av{width:34px;height:34px;border-radius:50%;object-fit:cover;border:1px solid var(--line)}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}
+.tabs button{padding:9px 15px;border-radius:11px;border:1px solid var(--line);background:transparent;color:var(--muted);font-weight:700;font-family:inherit;cursor:pointer}
+.tabs button.on{background:linear-gradient(135deg,var(--primary),var(--primary-2));color:#fff;border-color:transparent}
+.login{display:grid;place-items:center;min-height:80vh}
+.empty{padding:30px;text-align:center;color:var(--muted)}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--text);color:#fff;border:1px solid var(--text);padding:12px 18px;border-radius:12px;font-weight:600}
+.chat-list{border:1px solid var(--line);border-radius:14px;overflow:auto;background:var(--surface-2);max-height:70vh}
+.chat-convo{display:flex;gap:10px;align-items:center;padding:14px;cursor:pointer;border-bottom:1px solid var(--line)}
+.chat-convo:hover{background:#fff}
+.chat-convo b{font-size:13.5px}
+.chat-thread{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:14px;overflow:hidden;height:70vh}
+.chat-thread-head{padding:12px 16px;border-bottom:1px solid var(--line);background:var(--surface)}
+.chat-thread-body{flex:1;overflow:auto;padding:14px;display:flex;flex-direction:column;gap:8px;background:#fff}
+.chat-msg{max-width:78%;padding:9px 12px;border-radius:14px;font-size:13.5px;line-height:1.4}
+.chat-msg.user{align-self:flex-start;background:var(--surface-2)}
+.chat-msg.me{align-self:flex-end;background:var(--primary);color:#fff}
+.chat-msg .t{display:block;margin-top:3px;font-size:10.5px;opacity:.7}
+.chat-thread-input{display:flex;gap:8px;padding:10px;border-top:1px solid var(--line);background:var(--surface)}
+.chat-thread-input input{flex:1}
+.receipt-thumb{width:44px;height:44px;border-radius:8px;object-fit:cover;border:1px solid var(--line);cursor:pointer}
+
+html[data-theme="dark"]{--bg:#0a0f17;--surface:#111925;--surface-2:#182230;--line:#293548;--text:#edf2f8;--muted:#9aa8b8;--primary:#6d8cff;--danger:#ff6670}
+html[data-theme="dark"] body{background:var(--bg);color:var(--text)}
+html[data-theme="dark"] header{background:#0e1622!important}
+html[data-theme="dark"] input,html[data-theme="dark"] select,html[data-theme="dark"] textarea{background:#0d1520;color:var(--text);border-color:var(--line)}
+
+/* LIQUID GLASS */
+.panel,.kpi,.chat-thread,.chat-list,.modal-box,.topbar,.tabbar{backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);background:linear-gradient(145deg,rgba(255,255,255,.78),rgba(255,255,255,.50));box-shadow:0 20px 60px -30px rgba(33,58,99,.28),inset 0 1px 0 rgba(255,255,255,.7)}
+html[data-theme="dark"] .panel,html[data-theme="dark"] .kpi,html[data-theme="dark"] .chat-thread,html[data-theme="dark"] .chat-list,html[data-theme="dark"] .modal-box,html[data-theme="dark"] .topbar,html[data-theme="dark"] .tabbar{background:linear-gradient(145deg,rgba(24,34,48,.86),rgba(12,20,31,.74));box-shadow:0 24px 70px -32px rgba(0,0,0,.75),inset 0 1px 0 rgba(255,255,255,.08)}
+.admin-shell{box-shadow:inset 0 0 100px rgba(77,121,255,.04)}
+</style>
+</head>
+<body>
+<div id="gate" class="wrap login">
+  <div class="panel" style="width:min(420px,94vw)">
+    <div class="row"><span class="logo">SM</span><h2>Admin Console</h2></div>
+    <p style="color:var(--muted);font-size:14px">Admin console</p>
+    <input id="aUser" placeholder="Admin email" style="width:100%;margin-bottom:10px"/>
+    <input id="aPass" type="password" placeholder="Password" style="width:100%;margin-bottom:14px"/>
+    <button class="btn" style="width:100%" onclick="adminLogin()">Enter console</button>
+    
+  </div>
+</div>
+
+<div id="app" style="display:none">
+<header><div class="wrap spread">
+  <div class="row"><span class="logo">SM</span><b>Skill Mate — Admin</b> <span class="badge" style="margin-left:2px">Jobs & Apprentices</span></div>
+  <div class="row"><a class="btn ghost" href="index.html">← Back to site</a><button class="btn ghost" onclick="location.reload()">Refresh</button><button class="btn danger" onclick="adminOut()">Log out</button></div>
+</div></header>
+
+<div class="wrap">
+  <div class="kpis">
+    <div class="kpi"><b id="kUsers">0</b><span>Total users</span></div>
+    <div class="kpi"><b id="kBiz">0</b><span>Businesses</span></div>
+    <div class="kpi"><b id="kVer">0</b><span>Verified</span></div>
+    <div class="kpi"><b id="kReq">0</b><span>Listings</span></div>
+    <div class="kpi"><b id="kApp">0</b><span>Applications</span></div>
+    <div class="kpi"><b id="kRep">0</b><span>Open reports</span></div>
+    <div class="kpi"><b id="kChat">0</b><span>Unread chats</span></div>
+    <div class="kpi"><b id="kVerReq">0</b><span>Verification requests</span></div>
+    <div class="kpi"><b id="kFeatReq">0</b><span>Featured requests</span></div>
+    <div class="kpi"><b id="kWd">0</b><span>Pending withdrawals</span></div>
+  </div>
+
+  <div class="tabs">
+    <button class="on" data-t="listings" onclick="tab('listings')">Listings</button>
+    <button data-t="business" onclick="tab('business')">Business approvals</button>
+    <button data-t="verify" onclick="tab('verify')">Verify Users ✔</button>
+    <button data-t="featured" onclick="tab('featured')">Featured Requests</button>
+    <button data-t="withdrawals" onclick="tab('withdrawals')">Withdrawals 💸</button>
+    <button data-t="users" onclick="tab('users')">Users</button><button data-t="audit" onclick="tab('audit')">Account Audit 🔎</button>
+    <button data-t="reports" onclick="tab('reports')">Reports</button>
+    <button data-t="apps" onclick="tab('apps')">Applications</button>
+    <button data-t="chat" onclick="tab('chat')">Support Chat 💬</button>
+    <button data-t="owner" onclick="tab('owner')">Owner Profile 👑</button>
+    <button data-t="announcements" onclick="tab('announcements')">Announcements 📢</button><button data-t="reset" onclick="tab('reset')">Data tools</button>
+    <button data-t="demo" onclick="tab('demo')">Sample Listings 🧪</button>
+    <button onclick="toggleAdminTheme()">Theme ◐</button>
+  </div>
+
+  <div class="panel">
+    <div class="spread" style="margin-bottom:14px">
+      <h3 id="tabTitle">Listings</h3>
+      <input id="q" placeholder="Search…" oninput="render()" style="min-width:240px"/>
+    </div>
+    <div id="tableBox"></div>
+  </div>
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script>
+const CFG=window.SKILLMATE_CONFIG||{};
+const SB=(CFG.SUPABASE_URL&&CFG.SUPABASE_ANON_KEY&&window.supabase)?window.supabase.createClient(CFG.SUPABASE_URL,CFG.SUPABASE_ANON_KEY):null;
+const ADMIN={email:"",pass:""};
+
+window.ADMIN_API=(CFG.MEDIA_API||"").replace(/\/$/,"");
+window.ADMIN_TOKEN=sessionStorage.getItem("sm_admin_token")||"";
+async function backendAdminLogin(email,password){
+  if(!ADMIN_API)return true;
+  const r=await fetch(ADMIN_API+"/api/admin/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email,password})});
+  const out=await r.json(); if(!r.ok)throw new Error(out.error||"Login failed");
+  window.ADMIN_TOKEN=out.token;sessionStorage.setItem("sm_admin_token",out.token);return true;
+}
+function resetLocalData(){
+  if(!confirm("Clear browser-stored test data on this device?"))return;
+  const keep=["sm_admin","sm_admin_token","sm_admin_theme"];
+  Object.keys(localStorage).filter(k=>k.startsWith("sm_")&&!keep.includes(k)).forEach(k=>localStorage.removeItem(k));
+  toast("Local test data cleared"); setTimeout(()=>location.reload(),500);
+}
+async function inspectUser(id){
+  const u=DB.users.find(x=>x.id===id);if(!u)return;
+  let payload=null;
+  if(ADMIN_API && ADMIN_TOKEN){try{const r=await fetch(ADMIN_API+"/api/admin/users/"+encodeURIComponent(id),{headers:{Authorization:"Bearer "+ADMIN_TOKEN}});const out=await r.json();if(r.ok)payload=out.data;}catch{}}
+  const d=payload||{profiles:[u],requests:DB.requests.filter(x=>x.user_id===id),applications:DB.applications.filter(x=>x.user_id===id),reports:DB.reports.filter(x=>x.user_id===id),messages:DB.messages.filter(x=>x.user_id===id||x.sender_id===id||x.recipient_id===id),reviews:DB.reviews.filter(x=>x.reviewer_id===id||x.reviewee_id===id),verification_requests:DB.verification_requests.filter(x=>x.user_id===id),featured_requests:DB.featured_requests.filter(x=>x.user_id===id),referrals:DB.referrals.filter(x=>x.referrer_id===id||x.referred_id===id),withdrawals:DB.withdrawals.filter(x=>x.user_id===id),activity_log:(DB.activity_log||[]).filter(x=>x.user_id===id)};
+  const rawProfile=(d.profiles||[u])[0]||u; const {password:_,...profile}=rawProfile;
+  const modal=document.createElement("div");modal.className="modal";modal.innerHTML=`<div class="modal-box" style="width:min(1100px,94vw);max-height:88vh;overflow:auto"><div class="spread"><div><h2>${esc(profile.name||"User")}</h2><p class="meta">${esc(profile.email||"")} • ${esc(profile.phone||"")}</p></div><button class="btn ghost" onclick="this.closest('.modal').remove()">Close</button></div>
+  <div class="panel" style="margin-top:14px"><h3>Account details</h3><pre style="white-space:pre-wrap;overflow:auto;font-size:12px">${esc(JSON.stringify(profile,null,2))}</pre></div>
+  <div class="form-grid" style="margin-top:14px">
+    <div class="panel"><h3>Listings (${(d.requests||[]).length})</h3>${(d.requests||[]).map(x=>`<div class="mini"><b>${esc(x.title||x.skill||"Listing")}</b><span class="meta">${esc(x.status||"")}</span></div>`).join("")||'<div class="empty">None</div>'}</div>
+    <div class="panel"><h3>Applications (${(d.applications||[]).length})</h3>${(d.applications||[]).map(x=>`<div class="mini"><b>${esc(x.status||"Application")}</b><span class="meta">${esc(x.request_id||"")}</span></div>`).join("")||'<div class="empty">None</div>'}</div>
+    <div class="panel"><h3>Messages (${(d.messages||[]).length})</h3>${(d.messages||[]).slice(0,40).map(x=>`<div class="mini"><b>${esc(x.sender_id===id?"Sent":"Received")}</b><span class="meta">${esc((x.body||"").slice(0,140))}</span></div>`).join("")||'<div class="empty">None</div>'}</div>
+    <div class="panel"><h3>Activity (${(d.activity_log||[]).length})</h3>${(d.activity_log||[]).slice(0,100).map(x=>`<div class="mini"><b>${esc(x.action)}</b><span class="meta">${esc(new Date(x.created_at).toLocaleString())}</span><div class="meta">${esc(JSON.stringify(x.details||{}))}</div></div>`).join("")||'<div class="empty">No activity recorded</div>'}</div>
+  </div></div>`;document.body.appendChild(modal);
+}
+
+const LS={get:(k,d)=>{try{return JSON.parse(localStorage.getItem("sm_"+k))??d}catch(e){return d}},set:(k,v)=>localStorage.setItem("sm_"+k,JSON.stringify(v))};
+let DB={users:LS.get("users",[]),requests:LS.get("requests",[]),applications:LS.get("applications",[]),reports:LS.get("reports",[]),messages:LS.get("messages",[]),
+  reviews:LS.get("reviews",[]),verification_requests:LS.get("verification_requests",[]),featured_requests:LS.get("featured_requests",[]),
+  referrals:LS.get("referrals",[]),withdrawals:LS.get("withdrawals",[]),activity_log:LS.get("activity_log",[]),announcements:LS.get("announcements",[]),
+  demo_requests:LS.get("demo_requests",[])};
+const save=()=>Object.keys(DB).forEach(k=>LS.set(k,DB[k]));
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function toast(m){const t=document.createElement("div");t.className="toast";t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.remove(),2400)}
+let TAB="listings";
+let CHAT_SELECTED=null, CHAT_VIEW="list", CHAT_SHELL_FOR=null;
+
+async function adminLogin(){
+  try{
+    if(ADMIN_API){await backendAdminLogin(aUser.value.trim().toLowerCase(),aPass.value);sessionStorage.setItem("sm_admin","1");boot();return;}
+    if(!aUser.value.trim()||!aPass.value) return toast("Enter your administrator credentials");
+    if(aUser.value.trim().toLowerCase()!=="admin@skillmate.ng"||aPass.value!=="admin123") return toast("Wrong credentials");
+    sessionStorage.setItem("sm_admin","1"); boot();
+  }catch(e){toast(e.message||"Login failed");}
+}
+function adminOut(){sessionStorage.removeItem("sm_admin");location.reload()}
+function tab(t){
+  if(t==="chat" && TAB!=="chat"){ CHAT_VIEW="list"; CHAT_SELECTED=null; CHAT_SHELL_FOR=null; }
+  TAB=t;document.querySelectorAll(".tabs button").forEach(b=>b.classList.toggle("on",b.dataset.t===t));
+  tabTitle.textContent=b_title(t);render()}
+const b_title=t=>({listings:"Listings",business:"Business approvals",verify:"Verification Requests",featured:"Featured Requests",withdrawals:"Withdrawal Requests",users:"Users",reports:"Reports",apps:"Applications",chat:"Support Chat",owner:"Owner Profile",announcements:"Announcements",audit:"Account Audit",reset:"Data tools",demo:"Sample Listings"}[t]);
+
+async function pull(){
+  if(!SB){
+    // Keep locally stored records in sync when the database connection is unavailable.
+    Object.keys(DB).forEach(k=>{ DB[k]=LS.get(k,DB[k]); });
+    return;
+  }
+  const [u,r,a,rep,msg,rv,vr,fr,rf,wd,al,an,dr]=await Promise.all([SB.from("profiles").select("*"),SB.from("requests").select("*"),
+    SB.from("applications").select("*"),SB.from("reports").select("*"),SB.from("messages").select("*").order("created_at",{ascending:true}),
+    SB.from("reviews").select("*"),SB.from("verification_requests").select("*").order("created_at",{ascending:false}),
+    SB.from("featured_requests").select("*").order("created_at",{ascending:false}),
+    SB.from("referrals").select("*"),SB.from("withdrawals").select("*").order("created_at",{ascending:false}),SB.from("activity_log").select("*").order("created_at",{ascending:false}),SB.from("announcements").select("*").order("created_at",{ascending:false}),
+    SB.from("demo_requests").select("*").order("created_at",{ascending:false})]);
+  if(u.data)DB.users=u.data; if(r.data)DB.requests=r.data; if(a.data)DB.applications=a.data; if(rep.data)DB.reports=rep.data;
+  if(msg.data)DB.messages=msg.data; if(rv.data)DB.reviews=rv.data; if(vr.data)DB.verification_requests=vr.data; if(fr.data)DB.featured_requests=fr.data;
+  if(rf.data)DB.referrals=rf.data; if(wd.data)DB.withdrawals=wd.data; if(al.data)DB.activity_log=al.data; if(an.data)DB.announcements=an.data;
+  if(dr.data)DB.demo_requests=dr.data;
+  save();
+}
+async function push(table,id,patch){ if(!SB) return; const {error}=await SB.from(table).update(patch).eq("id",id); if(error) throw error; }
+function cryptoId(){ return Math.random().toString(36).slice(2,10)+Date.now().toString(36); }
+
+// Deterministic-ish generator for realistic-looking demo listings.
+// Categories: job (business hiring/apprenticeship), creator (brand collab), apprentice (available for work)
+
+function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+function pickN(arr,n){ const c=[...arr]; const out=[]; while(out.length<n && c.length){ out.push(c.splice(Math.floor(Math.random()*c.length),1)[0]); } return out; }
+function uid(prefix){ return (prefix||"demo")+"_"+Date.now().toString(36)+Math.random().toString(36).slice(2,8); }
+
+const CITY_POOL = [
+  ["Lagos","Ikeja"],["Lagos","Surulere"],["Lagos","Lagos Mainland"],["Lagos","Ajeromi-Ifelodun"],
+  ["Ogun","Abeokuta South"],["Ogun","Ado-Odo/Ota"],["Oyo","Ibadan North"],["Oyo","Ogbomoso North"],
+  ["Rivers","Port Harcourt"],["Rivers","Obio/Akpor"],["FCT - Abuja","Municipal (Abuja)"],["FCT - Abuja","Gwagwalada"],
+  ["Kano","Kano Municipal"],["Kano","Fagge"],["Enugu","Enugu East"],["Enugu","Nsukka"],
+  ["Delta","Warri South"],["Delta","Sapele"],["Anambra","Onitsha North"],["Anambra","Awka South"],
+  ["Kaduna","Kaduna North"],["Edo","Oredo"],["Imo","Owerri Municipal"],["Abia","Aba North"],
+  ["Cross River","Calabar Municipal"],["Osun","Osogbo"],["Plateau","Jos North"],["Akwa Ibom","Uyo"]
+];
+
+const BUSINESS_NAMES = [
+  "Golden Touch","Prestige","Sunrise","Bright Future","Royal Crown","Diamond Hub","Trust Point",
+  "Grace & Glory","Elite Craft","Heritage","Metro","Bluewave","Silver Line","Urban Edge","City Vibe",
+  "Kings Court","Divine Grace","Everest","Pinnacle","Crystal Clear","Signature","Legacy","Vantage",
+  "Prime","Fresh Start","Harmony","Cornerstone","Zenith","Trueline","NorthStar"
+];
+const SUFFIX = ["Ventures","Concepts","Studio","Enterprises","Services","Hub","Works","& Sons","Collective","Empire","Store","Salon","Garage","Kitchen","Media"];
+const PERSON_FIRST = ["Chidinma","Ifeoma","Blessing","Aisha","Fatima","Tunde","Emeka","Chukwuemeka","Samuel","David","Grace","Mercy","Yusuf","Ibrahim","Kelechi","Ngozi","Adaeze","Bukola","Kemi","Uche","Chiamaka","Damilola","Zainab","Halima","Obinna","Chinedu","Precious","Faith","Victor","Michael"];
+const PERSON_LAST = ["Okafor","Adeyemi","Balogun","Eze","Nwosu","Abdullahi","Okonkwo","Bello","Chukwu","Adebayo","Nnamdi","Okoro","Musa","Yakubu","Anyanwu","Olaniyan","Ojo","Ibe","Suleiman","Danladi"];
+
+const JOB_SKILLS = [
+  {skill:"Hairdressing",img:"salon-hair",titles:["Hairdressing Apprentice Wanted","Salon Assistant / Trainee Needed","Hairstylist Apprentice"],desc:"Learn professional hairdressing hands-on in a busy, well-equipped salon — weaving, styling, treatments and customer handling.",req:"Willing to learn, punctual, neat appearance. No prior experience required for the apprentice track."},
+  {skill:"Barbering",img:"barbershop",titles:["Barbering Apprentice Needed","Junior Barber Wanted","Barbershop Trainee"],desc:"Train under an experienced barber — fades, line-ups, beard grooming and shop management.",req:"Steady hands, interested in fashion/grooming trends, available full days."},
+  {skill:"Phone Repair",img:"phone-repair",titles:["Phone Repair Apprentice","GSM Technician Trainee","Mobile Repair Assistant Wanted"],desc:"Hands-on training in phone hardware and software repair — screen replacement, battery, software flashing and diagnostics.",req:"Basic interest in electronics, patient and detail-oriented."},
+  {skill:"Fashion Design",img:"tailor-shop",titles:["Fashion Design Apprentice","Tailoring Trainee Needed","Fashion Studio Assistant"],desc:"Learn pattern cutting, sewing and finishing in a growing fashion studio serving both ready-to-wear and bespoke clients.",req:"Interest in fashion, willing to start from the basics."},
+  {skill:"Catering",img:"kitchen-cooking",titles:["Kitchen Assistant Wanted","Catering Apprentice Needed","Cook Trainee for Busy Kitchen"],desc:"Join our kitchen team preparing local and continental dishes for events and walk-in customers.",req:"Hygiene-conscious, can stand for long hours, team player."},
+  {skill:"Auto Mechanic","img":"car-mechanic",titles:["Auto Mechanic Apprentice","Mechanic Workshop Trainee","Vehicle Technician Wanted"],desc:"Learn engine diagnostics, servicing and repair in a well-patronized auto workshop.",req:"Interest in vehicles/machinery, physically fit, reliable."},
+  {skill:"Welding & Fabrication",img:"welding-metal",titles:["Welder Apprentice Wanted","Fabrication Trainee Needed","Junior Welder"],desc:"Hands-on training in arc welding, gate/window fabrication and metal furniture work.",req:"Willing to work with tools, safety-conscious, can follow instructions."},
+  {skill:"Electrical Work",img:"electrician-work",titles:["Electrician's Apprentice Needed","Electrical Trainee Wanted","Junior Electrician"],desc:"Learn residential and light commercial wiring, installation and fault-finding under a licensed electrician.",req:"Careful and safety-conscious, basic literacy for reading diagrams."},
+  {skill:"Baking & Pastry",img:"bakery-bread",titles:["Bakery Apprentice Wanted","Pastry Trainee Needed","Junior Baker"],desc:"Train in bread, cake and pastry production for a bakery supplying shops and event orders across the city.",req:"Early riser, hygiene-conscious, interest in baking."},
+  {skill:"Photography",img:"photo-studio",titles:["Photography Assistant Wanted","Studio Trainee Needed","Junior Photographer"],desc:"Assist on shoots (events, portraits, product) and learn editing workflow in a growing photo studio.",req:"Creative eye, own or willing to learn camera basics, reliable."},
+  {skill:"Plumbing",img:"plumber-pipes",titles:["Plumbing Apprentice Wanted","Plumber's Trainee Needed"],desc:"Learn pipe fitting, installation and repair for residential and commercial plumbing jobs.",req:"Physically fit, willing to learn, punctual."},
+  {skill:"Carpentry",img:"carpentry-wood",titles:["Carpentry Apprentice Needed","Furniture Workshop Trainee"],desc:"Hands-on training making furniture, doors and fittings in an established carpentry workshop.",req:"Interest in woodwork, careful with tools, reliable."},
+  {skill:"Makeup Artistry",img:"makeup-artist",titles:["Makeup Artist Apprentice","Beauty Studio Trainee Wanted"],desc:"Learn bridal and everyday makeup application, product knowledge and client handling.",req:"Interest in beauty/fashion, steady hands, presentable."},
+  {skill:"Solar Installation",img:"solar-panel",titles:["Solar Installation Trainee","Renewable Energy Apprentice Wanted"],desc:"Train in solar panel installation, inverter setup and basic maintenance for homes and offices.",req:"Interest in renewable energy, comfortable working at heights, safety-conscious."}
+];
+
+const CREATOR_SKILLS = [
+  {skill:"Content Creation",img:"content-creator",titles:["Brand Ambassador / Content Collab Wanted","Looking for a Content Creator to Feature Our Products","UGC Creator Needed for Product Reviews"],desc:"We're looking for creators to feature our products in short-form videos and posts — great for growing your page while earning per collab.",req:"Active TikTok/Instagram page, decent engagement, based in or near our city preferred."},
+  {skill:"Social Media Management",img:"social-media",titles:["Social Media Partner / Collab Wanted","Influencer Needed for Monthly Promo"],desc:"Seeking a social media personality to help promote our brand through reels, stories and posts on a recurring basis.",req:"Consistent posting schedule, engaged followers, good content quality."},
+  {skill:"Video Editing",img:"video-editing",titles:["Creator Collab — Product Unboxing Videos","Looking for a Videographer/Creator Partner"],desc:"Partner with us to create unboxing and review videos of our products for your audience.",req:"Own camera/phone setup, editing skills a plus, willing to do sponsored content."},
+  {skill:"Photography",img:"fashion-photoshoot",titles:["Content Creator Needed for Fashion Shoots","Looking for a Creative to Model & Post Our Pieces"],desc:"We supply outfits/products — you shoot, post and tag us. Great for growing a fashion/lifestyle page.",req:"Good camera or phone quality, aesthetic feed, based locally preferred."}
+];
+
+const APPRENTICE_SKILLS = [
+  {skill:"Hairdressing",img:"hair-stylist-portrait",titles:["Experienced Hairstylist Available for Work","Trained Hair Braider Looking for Salon Placement"],desc:"Trained hairstylist with braiding, weaving and styling experience looking for a salon placement or apprenticeship completion opportunity."},
+  {skill:"Phone Repair",img:"technician-tools",titles:["GSM Technician Available for Work","Trained Phone Repairer Seeking Job"],desc:"Completed phone repair training and looking for a shop to work in — screen, battery and software repairs."},
+  {skill:"Graphics Design",img:"designer-desk",titles:["Graphics Designer Available for Freelance/Job","Trained Designer Looking for Work"],desc:"Skilled in flyer design, branding and social media graphics — available for freelance gigs or a full-time role."},
+  {skill:"Tailoring",img:"tailoring-hands",titles:["Trained Tailor Available for Work","Fashion Apprentice Seeking Placement"],desc:"Completed tailoring apprenticeship, skilled in native and corporate wear — looking for a workshop to join."},
+  {skill:"Driving",img:"driver-car",titles:["Experienced Driver Available for Work","Licensed Driver Seeking Employment"],desc:"Experienced and licensed driver, familiar with city routes, looking for a driving job with a business or family."},
+  {skill:"Catering",img:"chef-cooking",titles:["Trained Cook Available for Work","Catering Assistant Seeking Job"],desc:"Trained in local and continental dishes, looking for a kitchen role in a restaurant or catering service."},
+  {skill:"Makeup Artistry",img:"makeup-kit",titles:["Makeup Artist Available for Bookings/Job","Trained MUA Seeking Salon Placement"],desc:"Skilled in bridal and everyday makeup, looking for salon placement or freelance bookings."},
+  {skill:"Web Development",img:"developer-laptop",titles:["Junior Web Developer Available for Work","Self-taught Developer Seeking Entry Role"],desc:"Comfortable with HTML/CSS/JavaScript basics, looking for an entry-level or internship role to grow."}
+];
+
+const DURATIONS = ["3 months","6 months","1 year","2 years","Ongoing"];
+const HOURS = ["8am - 5pm, Mon - Sat","9am - 6pm, Mon - Fri","8am - 6pm, Mon - Sat","Flexible hours"];
+const PAY_JOB = ["₦10,000/month stipend","₦15,000/month stipend","₦20,000/month + feeding","₦25,000/month","None (skill training only)","₦8,000/month stipend"];
+const PAY_CREATOR = ["₦5,000 per video + free products","₦10,000 per post","Free products + commission on sales","₦15,000/month retainer"];
+const ACCOM = ["Yes","No"];
+const EXP = ["Beginner","Intermediate","Advanced"];
+
+function randomOwnerName(){
+  return Math.random()<0.5
+    ? `${pick(BUSINESS_NAMES)} ${pick(SUFFIX)}`
+    : `${pick(PERSON_FIRST)} ${pick(PERSON_LAST)}`;
+}
+
+function makeJobListing(){
+  const t=pick(JOB_SKILLS); const [state,city]=pick(CITY_POOL);
+  const business=`${pick(BUSINESS_NAMES)} ${pick(SUFFIX)}`;
+  const ownerName=pick(PERSON_FIRST)+" "+pick(PERSON_LAST);
+  const title=pick(t.titles);
+  // Keep the type badge coherent with the title wording (an "Apprentice" title
+  // shouldn't show a "Full-time Job" badge).
+  const type=/apprentice/i.test(title) ? "Apprenticeship" : pick(["Handwork Job","Full-time Job","Part-time Job"]);
+  return {
+    id: uid("demo"),
+    type, skill:t.skill, title,
+    state, city, experience: pick(EXP), slots: pick([1,1,2,2,3]),
+    duration: pick(DURATIONS), hours: pick(HOURS),
+    accommodation: pick(ACCOM), meals: pick(ACCOM), pay: pick(PAY_JOB),
+    content_creator_opportunity: false,
+    description: t.desc, requirements: t.req,
+    media: [{type:"image/jpeg", url:`https://picsum.photos/seed/${t.img}-${Math.floor(Math.random()*9999)}/640/420`}],
+    lat: null, lng: null,
+    owner_name: ownerName, owner_business_name: business,
+    owner_avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(business)}&background=random&size=128`,
+    owner_verified: Math.random()<0.7,
+    created_at: new Date(Date.now()-Math.floor(Math.random()*20)*86400000).toISOString()
+  };
+}
+function makeCreatorListing(){
+  const t=pick(CREATOR_SKILLS); const [state,city]=pick(CITY_POOL);
+  const business=`${pick(BUSINESS_NAMES)} ${pick(SUFFIX)}`;
+  return {
+    id: uid("demo"),
+    type:"Contract Gig", skill:t.skill, title: pick(t.titles),
+    state, city, experience: pick(EXP), slots: pick([1,2,3,5]),
+    duration: pick(["One-off","1 month","3 months","Ongoing"]), hours: "Flexible hours",
+    accommodation:"No", meals:"No", pay: pick(PAY_CREATOR),
+    content_creator_opportunity: true,
+    description: t.desc, requirements: t.req,
+    media: [{type:"image/jpeg", url:`https://picsum.photos/seed/${t.img}-${Math.floor(Math.random()*9999)}/640/420`}],
+    lat: null, lng: null,
+    owner_name: pick(PERSON_FIRST)+" "+pick(PERSON_LAST), owner_business_name: business,
+    owner_avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(business)}&background=random&size=128`,
+    owner_verified: Math.random()<0.6,
+    created_at: new Date(Date.now()-Math.floor(Math.random()*20)*86400000).toISOString()
+  };
+}
+function makeApprenticeListing(){
+  const t=pick(APPRENTICE_SKILLS); const [state,city]=pick(CITY_POOL);
+  const name=pick(PERSON_FIRST)+" "+pick(PERSON_LAST);
+  return {
+    id: uid("demo"),
+    type:"Available For Work", skill:t.skill, title: pick(t.titles),
+    state, city, experience: pick(EXP), slots: 1,
+    duration: "—", hours: pick(HOURS),
+    accommodation:"No", meals:"No", pay: "Open to discuss",
+    content_creator_opportunity: false,
+    description: t.desc, requirements: "—",
+    media: [{type:"image/jpeg", url:`https://picsum.photos/seed/${t.img}-${Math.floor(Math.random()*9999)}/640/420`}],
+    lat: null, lng: null,
+    owner_name: name, owner_business_name: "",
+    owner_avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random&size=128`,
+    owner_verified: Math.random()<0.4,
+    created_at: new Date(Date.now()-Math.floor(Math.random()*20)*86400000).toISOString()
+  };
+}
+
+function shuffle(arr){ for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; } return arr; }
+function generateBatch(n){
+  // Guarantee a real mix rather than leaving it to chance: roughly half job
+  // listings, a quarter each of apprentice-available and creator collabs.
+  const nJob=Math.round(n*0.5), nApp=Math.round(n*0.25), nCreator=n-nJob-nApp;
+  const out=[];
+  for(let i=0;i<nJob;i++) out.push(makeJobListing());
+  for(let i=0;i<nApp;i++) out.push(makeApprenticeListing());
+  for(let i=0;i<nCreator;i++) out.push(makeCreatorListing());
+  return shuffle(out);
+}
+
+/* ---------- sample listing generator ----------
+   Creates realistic-looking listings kept in their own demo_requests table —
+   completely separate from real listings, never labeled as samples on the
+   public site. */
+function seedDemoListings(n){
+  const batch = generateBatch(n);
+  DB.demo_requests = [...batch, ...DB.demo_requests]; save(); render();
+  toast(n>=30 ? "Generating "+n+" sample listings…" : "Adding "+n+" more sample listings…");
+  if(SB){
+    SB.from("demo_requests").insert(batch).then(({error})=>{
+      if(error){
+        DB.demo_requests = DB.demo_requests.filter(d=>!batch.some(b=>b.id===d.id));
+        save(); render();
+        toast("Could not save sample listings — "+(error.message||"try again"));
+      } else {
+        toast(n+" sample listings are live");
+      }
+    });
+  }
+}
+function deleteDemoListing(id){
+  const removed = DB.demo_requests.find(d=>d.id===id);
+  DB.demo_requests = DB.demo_requests.filter(d=>d.id!==id); save(); render();
+  if(SB) SB.from("demo_requests").delete().eq("id",id).then(({error})=>{
+    if(error && removed){ DB.demo_requests.unshift(removed); save(); render(); toast("Could not delete — reverted"); }
+  });
+}
+function clearDemoListings(){
+  if(!confirm("Remove all sample listings from the site? This can't be undone.")) return;
+  const removed = DB.demo_requests; const ids = removed.map(d=>d.id);
+  DB.demo_requests = []; save(); render();
+  toast("Sample listings cleared");
+  if(SB && ids.length) SB.from("demo_requests").delete().in("id",ids).then(({error})=>{
+    if(error){ DB.demo_requests = removed; save(); render(); toast("Could not clear — reverted"); }
+  });
+}
+
+
+
+function kpis(){
+  kUsers.textContent=DB.users.length;
+  kBiz.textContent=DB.users.filter(u=>u.role==="business").length;
+  kVer.textContent=DB.users.filter(u=>u.verified).length;
+  kReq.textContent=DB.requests.length;
+  kApp.textContent=DB.applications.length;
+  kRep.textContent=DB.reports.filter(r=>r.status==="open").length;
+  const unreadUsers=new Set(DB.messages.filter(m=>m.sender==="user"&&!m.read_by_admin).map(m=>m.user_id));
+  kChat.textContent=unreadUsers.size;
+  kVerReq.textContent=DB.verification_requests.filter(v=>v.status==="pending").length;
+  kFeatReq.textContent=DB.featured_requests.filter(f=>f.status==="pending").length;
+  kWd.textContent=DB.withdrawals.filter(w=>w.status==="pending").length;
+}
+const match=(o,q)=>JSON.stringify(o).toLowerCase().includes(q);
+
+/* ---------- owner / brand profile ----------
+   A real, visible profile (shown with a 👑 badge on the public site) that
+   represents you as the platform's founder/owner. Login credentials here
+   are for that PUBLIC account — separate from this admin console's login. */
+const OWNER_ID="skillmate_owner";
+let OWNER_AVATAR=null;
+function compressImageAdmin(file,maxDim,quality){
+  maxDim=maxDim||600; quality=quality||0.75;
+  return new Promise((resolve)=>{
+    if(!file.type||!file.type.startsWith("image")){ const r=new FileReader(); r.onload=()=>resolve(r.result); r.readAsDataURL(file); return; }
+    const reader=new FileReader();
+    reader.onload=()=>{
+      const img=new Image();
+      img.onload=()=>{
+        let w=img.width,h=img.height;
+        if(w>maxDim||h>maxDim){ const s=maxDim/Math.max(w,h); w=Math.round(w*s); h=Math.round(h*s); }
+        const canvas=document.createElement("canvas"); canvas.width=w; canvas.height=h;
+        canvas.getContext("2d").drawImage(img,0,0,w,h);
+        resolve(canvas.toDataURL("image/jpeg",quality));
+      };
+      img.onerror=()=>resolve(reader.result);
+      img.src=reader.result;
+    };
+    reader.onerror=()=>resolve(null);
+    reader.readAsDataURL(file);
+  });
+}
+async function pickOwnerAvatar(input){
+  const f=input.files[0]; if(!f) return;
+  OWNER_AVATAR=await compressImageAdmin(f);
+  document.getElementById("ownerAvatarPrev").src=OWNER_AVATAR;
+}
+function renderOwnerTab(){
+  const o=DB.users.find(u=>u.id===OWNER_ID||u.is_owner);
+  OWNER_AVATAR=null;
+  document.getElementById("tableBox").innerHTML=`
+    <div class="panel" style="max-width:560px">
+      <div class="row" style="gap:8px;margin-bottom:6px"><span class="badge gold">👑 Owner</span>${o?`<span class="badge ok">Active</span>`:`<span class="badge">Not set up yet</span>`}</div>
+      <p class="meta" style="margin-bottom:16px">A real, public profile shown with a 👑 Owner badge across the site. Sign in to it on the main site with the email/password below — separate from this admin console's login.</p>
+      <div class="form-grid">
+        <div class="full row" style="gap:14px;align-items:center">
+          <img id="ownerAvatarPrev" class="av" style="width:64px;height:64px;border-radius:50%" src="${esc(o&&o.avatar||'https://api.dicebear.com/7.x/initials/svg?seed=Skill+Mate')}"/>
+          <div><div class="btn ghost sm" onclick="document.getElementById('ownerAvatarInput').click()">Change photo</div>
+          <input type="file" id="ownerAvatarInput" class="hidden" accept="image/*" onchange="pickOwnerAvatar(this)"/></div>
+        </div>
+        <div class="full"><label>Name</label><input id="ownName" value="${esc(o&&o.name||'')}"/></div>
+        <div class="full"><label>Brand / business name</label><input id="ownBiz" value="${esc(o&&o.business_name||'Skill Mate')}"/></div>
+        <div><label>Email</label><input id="ownEmail" value="${esc(o&&o.email||'')}"/></div>
+        <div><label>Password</label><input id="ownPass" placeholder="${o?'Leave blank to keep current':'Set a password'}"/></div>
+        <div><label>Phone</label><input id="ownPhone" value="${esc(o&&o.phone||'')}"/></div>
+        <div><label>State</label><input id="ownState" value="${esc(o&&o.state||'Lagos')}"/></div>
+        <div><label>City</label><input id="ownCity" value="${esc(o&&o.city||'')}"/></div>
+        <div class="full"><label>Bio</label><textarea id="ownBio" rows="3">${esc(o&&o.bio||'')}</textarea></div>
+        <div class="full"><button class="btn block" onclick="saveOwnerProfile()">${o?"Save changes":"Create owner account"}</button></div>
+      </div>
+    </div>`;
+}
+async function saveOwnerProfile(){
+  const name=document.getElementById("ownName").value.trim();
+  const email=document.getElementById("ownEmail").value.trim().toLowerCase();
+  if(!name||!email) return toast("Name and email are required");
+  const existing=DB.users.find(u=>u.id===OWNER_ID||u.is_owner);
+  const pass=document.getElementById("ownPass").value;
+  const patch={
+    name, email,
+    phone:document.getElementById("ownPhone").value.trim(),
+    business_name:document.getElementById("ownBiz").value.trim(),
+    state:document.getElementById("ownState").value.trim(),
+    city:document.getElementById("ownCity").value.trim(),
+    bio:document.getElementById("ownBio").value.trim(),
+    verified:true, is_owner:true, status:"active", email_verified:true, skill:"Skill Mate Team"
+  };
+  if(OWNER_AVATAR) patch.avatar=OWNER_AVATAR;
+  if(pass) patch.password=pass;
+  try{
+    if(existing){
+      if(SB) await SB.from("profiles").update(patch).eq("id",existing.id);
+      Object.assign(existing,patch);
+    } else {
+      const full={...patch, id:OWNER_ID, role:"admin",
+        avatar:patch.avatar||"https://api.dicebear.com/7.x/initials/svg?seed="+encodeURIComponent(name),
+        password:pass||Math.random().toString(36).slice(2,10), created_at:new Date().toISOString()};
+      if(SB){ const {error}=await SB.from("profiles").insert(full); if(error) throw error; }
+      DB.users.push(full);
+    }
+    save(); toast("Owner profile saved"); renderOwnerTab();
+  }catch(e){ toast("Could not save: "+e.message); }
+}
+function receiptCell(url,ref,amount){
+  const img = url ? `<img class="receipt-thumb" src="${esc(url)}" onclick="viewReceipt('${esc(url)}')"/>` : `<span class="meta">No receipt</span>`;
+  return `<div class="row" style="gap:8px">${img}<div><div class="meta">₦${esc(amount)}</div>${ref?`<div style="color:var(--muted);font-size:12px">${esc(ref)}</div>`:""}</div></div>`;
+}
+function viewReceipt(url){
+  document.getElementById("tableBox").insertAdjacentHTML("beforeend",
+    `<div class="modal" style="position:fixed;inset:0;background:rgba(10,14,20,.7);display:grid;place-items:center;z-index:50" onclick="this.remove()">
+      <img src="${esc(url)}" style="max-width:92vw;max-height:88vh;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.4)"/>
+    </div>`);
+}
+
+function render(){
+  kpis(); const q=(document.getElementById("q").value||"").toLowerCase();
+  if(TAB==="chat"){ renderChatTab(q); return; }
+  const qEl=document.getElementById("q"); if(qEl) qEl.style.display=(TAB==="owner"?"none":"");
+  if(TAB==="owner"){ renderOwnerTab(); return; }
+  let html="";
+  if(TAB==="listings"){
+    const rows=DB.requests.filter(r=>match(r,q));
+    html=table(["Title","Type","Skill","Location","Owner","Status",""],rows.map(r=>{
+      const o=DB.users.find(u=>u.id===r.user_id)||{name:"—"};
+      return `<tr><td><b>${esc(r.title)}</b></td><td><span class="badge">${esc(r.type)}</span></td><td>${esc(r.skill)}</td>
+      <td>${esc(r.city)}, ${esc(r.state)}</td><td>${esc(o.business_name||o.name)}</td>
+      <td><span class="badge ${r.status==="removed"?"red":"ok"}">${esc(r.status)}</span>${r.featured?' <span class="badge gold">★</span>':''}</td>
+      <td class="row"><button class="btn gold" onclick="feature('${r.id}')">${r.featured?"Unfeature":"Feature"}</button>
+      <button class="btn ${r.status==="removed"?"":"danger"}" onclick="toggleListing('${r.id}')">${r.status==="removed"?"Restore":"Remove"}</button></td></tr>`}));
+  }
+  if(TAB==="business"){
+    const rows=DB.users.filter(u=>u.role==="business"&&match(u,q));
+    html=table(["Business","Owner","Skill","Location","Verification",""],rows.map(u=>`<tr>
+      <td class="row"><img class="av" src="${esc(u.avatar)}"/> <b>${esc(u.business_name||u.name)}</b></td>
+      <td>${esc(u.name)}<div style="color:var(--muted);font-size:12px">${esc(u.phone)}</div></td>
+      <td>${esc(u.skill)}</td><td>${esc(u.city)}, ${esc(u.state)}</td>
+      <td><span class="badge ${u.verified?"ok":"gold"}">${u.verified?"Verified":"Pending"}</span></td>
+      <td><button class="btn" onclick="verify('${u.id}')">${u.verified?"Revoke":"Approve & verify"}</button></td></tr>`));
+  }
+  if(TAB==="verify"){
+    const rows=DB.verification_requests.filter(v=>match(v,q));
+    html=table(["Applicant","Contact","ID submitted","Successful uses","Good reviews","Receipt","Status",""],rows.map(v=>{
+      const u=DB.users.find(x=>x.id===v.user_id)||{name:"Unknown user",avatar:""};
+      const uses=DB.applications.filter(a=>a.status==="accepted"&&(a.user_id===v.user_id||(DB.requests.find(r=>r.id===a.request_id)||{}).user_id===v.user_id)).length;
+      const good=DB.reviews.filter(r=>r.reviewee_id===v.user_id&&r.rating>=4).length;
+      return `<tr><td class="row"><img class="av" src="${esc(u.avatar)}"/><b>${esc(v.full_name||u.name)}</b></td>
+      <td>${esc(u.email||"—")}<div style="color:var(--muted);font-size:12px">${esc(u.phone||"")}</div></td>
+      <td>${esc(v.id_type||"—")}<div style="color:var(--muted);font-size:12px">${esc(v.id_number||"")}</div></td>
+      <td><span class="badge ${uses>=2?"ok":""}">${uses}/2</span></td>
+      <td><span class="badge ${good>=2?"ok":""}">${good}/2</span></td>
+      <td>${receiptCell(v.receipt_url,v.payment_ref,v.amount||3999)}</td>
+      <td><span class="badge ${v.status==="approved"?"ok":v.status==="rejected"?"red":"gold"}">${esc(v.status)}</span></td>
+      <td class="row">${v.status==="pending"?`<button class="btn" onclick="approveVerification('${v.id}')">Approve</button>
+        <button class="btn danger" onclick="rejectVerification('${v.id}')">Reject</button>`:""}</td></tr>`}));
+  }
+  if(TAB==="featured"){
+    const rows=DB.featured_requests.filter(f=>match(f,q));
+    html=table(["Listing","Owner","Receipt","Status",""],rows.map(f=>{
+      const r=DB.requests.find(x=>x.id===f.request_id)||{title:"Removed listing"};
+      const u=DB.users.find(x=>x.id===f.user_id)||{name:"—"};
+      return `<tr><td><b>${esc(r.title)}</b></td><td>${esc(u.name)}</td>
+      <td>${receiptCell(f.receipt_url,f.payment_ref,f.amount||1999)}</td>
+      <td><span class="badge ${f.status==="approved"?"ok":f.status==="rejected"?"red":"gold"}">${esc(f.status)}</span></td>
+      <td class="row">${f.status==="pending"?`<button class="btn" onclick="approveFeatured('${f.id}')">Approve</button>
+        <button class="btn danger" onclick="rejectFeatured('${f.id}')">Reject</button>`:""}</td></tr>`}));
+  }
+  if(TAB==="users"){
+    const rows=DB.users.filter(u=>match(u,q));
+    html=table(["User","Role","Contact","Location","Status",""],rows.map(u=>`<tr>
+      <td class="row"><img class="av" src="${esc(u.avatar)}"/> ${esc(u.name)}</td>
+      <td><span class="badge">${esc(u.role)}</span></td>
+      <td>${esc(u.email)}<div style="color:var(--muted);font-size:12px">${esc(u.phone)}</div></td>
+      <td>${esc(u.city)}, ${esc(u.state)}</td>
+      <td><span class="badge ${u.status==="suspended"||u.status==="banned"?"red":"ok"}">${esc(u.status||"active")}</span></td>
+      <td class="row">
+        <button class="btn" onclick="verifyUser('${u.id}')">${u.verified?"Unverify":"Verify account"}</button><button class="btn ghost" onclick="inspectUser('${u.id}')">Inspect</button>
+        <button class="btn ${u.status==="banned"?"":"danger"}" onclick="banUser('${u.id}')">${u.status==="banned"?"Unban":"Ban account"}</button>
+      </td></tr>`));
+  }
+  if(TAB==="reports"){
+    const rows=DB.reports.filter(r=>match(r,q));
+    html=table(["Listing","Reason","Reported by","Status",""],rows.map(r=>{
+      const l=DB.requests.find(x=>x.id===r.request_id)||{title:"—"};
+      const u=DB.users.find(x=>x.id===r.user_id)||{name:"Guest"};
+      return `<tr><td>${esc(l.title)}</td><td>${esc(r.reason)}</td><td>${esc(u.name)}</td>
+      <td><span class="badge ${r.status==="open"?"red":"ok"}">${esc(r.status)}</span></td>
+      <td class="row"><button class="btn danger" onclick="toggleListing('${r.request_id}')">Remove listing</button>
+      <button class="btn ghost" onclick="resolve('${r.id}')">Mark resolved</button></td></tr>`}));
+  }
+  if(TAB==="apps"){
+    const rows=DB.applications.filter(a=>match(a,q));
+    html=table(["Applicant","Listing","Message","Contact","Status"],rows.map(a=>{
+      const u=DB.users.find(x=>x.id===a.user_id)||{name:"—"};
+      const l=DB.requests.find(x=>x.id===a.request_id)||{title:"—"};
+      return `<tr><td>${esc(u.name)}</td><td>${esc(l.title)}</td><td>${esc((a.message||"").slice(0,80))}</td>
+      <td>${esc(a.phone||"—")}</td><td><span class="badge">${esc(a.status)}</span></td></tr>`}));
+  }
+  if(TAB==="withdrawals"){
+    const rows=DB.withdrawals.filter(w=>match(w,q)).slice().sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
+    html=table(["User","Amount","Bank","Account","Status",""],rows.map(w=>{
+      const u=DB.users.find(x=>x.id===w.user_id)||{name:"—"};
+      return `<tr><td>${esc(u.name)}<div style="color:var(--muted);font-size:12px">${esc(u.email||"")}</div></td>
+      <td>₦${esc(w.amount)}</td><td>${esc(w.bank_name||"—")}</td>
+      <td>${esc(w.account_number||"—")}<div style="color:var(--muted);font-size:12px">${esc(w.account_name||"")}</div></td>
+      <td><span class="badge ${w.status==="approved"?"ok":w.status==="rejected"?"red":"gold"}">${esc(w.status)}</span></td>
+      <td class="row">${w.status==="pending"?`<button class="btn" onclick="approveWithdrawal('${w.id}')">Mark paid</button>
+        <button class="btn danger" onclick="rejectWithdrawal('${w.id}')">Reject &amp; refund</button>`:""}</td></tr>`}));
+  }
+
+  if(TAB==="announcements"){
+    const rows=DB.announcements.filter(x=>match(x,q));
+    html=table(["Title","Message","Recipient","Mode","Created","Status",""],rows.map(x=>`<tr>
+      <td><b>${esc(x.title)}</b></td><td style="max-width:420px">${esc(x.message)}</td><td>${esc(x.target_user_id?(DB.users.find(u=>u.id===x.target_user_id)||{}).name||x.target_user_id:"Everyone")}</td>
+      <td><span class="badge ${x.force?"red":"ok"}">${x.force?"Force to see":"Personal check"}</span></td>
+      <td>${esc(x.created_at?new Date(x.created_at).toLocaleString():"—")}</td>
+      <td>${esc(x.status||"published")}</td>
+      <td><button class="btn danger" onclick="archiveAnnouncement('${x.id}')">Archive</button></td>
+    </tr>`));
+    html = `<div class="panel" style="margin-bottom:16px"><h3>Create announcement</h3>
+      <div class="form-grid" style="margin-top:12px">
+        <div><label>Title</label><input id="annTitle" placeholder="New Skill Mate update"/></div>
+        <div><label>Delivery</label><select id="annForce"><option value="false">Personal check — users click 📢</option><option value="true">Force to see — popup on entry/login</option></select></div>
+        <div><label>Recipient</label><select id="annTarget"><option value="">Everyone</option>${DB.users.slice().sort((a,b)=>String(a.name||'').localeCompare(String(b.name||''))).map(u=>`<option value="${esc(u.id)}">${esc(u.name||u.email)} — ${esc(u.email||'')}</option>`).join('')}</select></div>
+        <div class="full"><label>Public message</label><textarea id="annMessage" rows="4" placeholder="Write the announcement..."></textarea></div>
+        <div class="full"><button class="btn" onclick="createAnnouncement()">Publish announcement</button></div>
+      </div></div>` + html;
+  }
+
+
+  if(TAB==="audit"){
+    const rows=DB.users.filter(u=>match(u,q)).map(u=>{
+      const logs=(DB.activity_log||[]).filter(x=>x.user_id===u.id).sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
+      const posts=DB.requests.filter(r=>r.user_id===u.id).length;
+      const apps=DB.applications.filter(x=>x.user_id===u.id).length;
+      const chats=DB.messages.filter(x=>x.user_id===u.id||x.sender_id===u.id||x.recipient_id===u.id).length;
+      const last=logs[0];
+      return `<tr><td class="row"><img class="av" src="${esc(u.avatar||"")}"/><div><b>${esc(u.name||"—")}</b><div style="color:var(--muted);font-size:12px">${esc(u.email||"")}</div></div></td><td>${posts}</td><td>${apps}</td><td>${chats}</td><td>${last?esc(last.action):"—"}<div style="color:var(--muted);font-size:12px">${last?new Date(last.created_at).toLocaleString():""}</div></td><td><button class="btn" onclick="inspectUser('${u.id}')">Open full account</button></td></tr>`;
+    });
+    html=table(["User","Listings","Applications","Messages","Latest activity",""],rows);
+  }
+
+  if(TAB==="reset"){
+    html=`<div class="panel"><h3>Data tools</h3><p class="meta">Clear locally stored records from this device. This does not remove cloud records.</p><button class="btn danger" onclick="resetLocalData()">Clear local test data</button></div>`;
+  }
+
+  if(TAB==="demo"){
+    const rows=DB.demo_requests.filter(r=>match(r,q));
+    html=`<div class="panel" style="margin-bottom:14px">
+      <h3 style="margin:0 0 6px">Sample listings</h3>
+      <p class="meta" style="margin:0 0 14px">These fill out the marketplace with realistic-looking listings so it never feels empty. They're kept in a separate table from real listings, are never labeled "demo" to visitors, and applying/chatting on one shows a friendly explanation instead of creating a real interaction that would go nowhere.</p>
+      <div class="row">
+        <button class="btn" onclick="seedDemoListings(30)">🧪 Generate 30 sample listings</button>
+        <button class="btn ghost" onclick="seedDemoListings(5)">+ Add 5 more</button>
+        <button class="btn danger" onclick="clearDemoListings()">Clear all sample listings</button>
+      </div>
+    </div>` +
+    table(["Title","Type","Skill","Location","Owner shown as","Created",""],rows.map(r=>`
+      <tr><td><b>${esc(r.title)}</b></td><td><span class="badge">${esc(r.type)}</span></td><td>${esc(r.skill)}</td>
+      <td>${esc(r.city)}, ${esc(r.state)}</td><td>${esc(r.owner_business_name||r.owner_name)}</td>
+      <td>${new Date(r.created_at).toLocaleDateString()}</td>
+      <td><button class="btn danger" onclick="deleteDemoListing('${r.id}')">Delete</button></td></tr>`));
+  }
+
+  document.getElementById("tableBox").innerHTML=html;
+}
+function table(cols,rows){
+  if(!rows.length) return `<div class="empty">Nothing here yet.</div>`;
+  return `<div style="overflow:auto"><table><thead><tr>${cols.map(c=>`<th>${c}</th>`).join("")}</tr></thead><tbody>${rows.join("")}</tbody></table></div>`;
+}
+function verify(id){
+  const u=DB.users.find(x=>x.id===id); if(!u)return;
+  const prev=u.verified; u.verified=!u.verified; save(); render();
+  toast(u.verified?"Business verified ✔":"Verification revoked");
+  push("profiles",id,{verified:u.verified}).catch(()=>{ u.verified=prev; save(); render(); toast("Could not save — reverted"); });
+}
+function suspend(id){
+  const u=DB.users.find(x=>x.id===id); if(!u)return;
+  const prev=u.status; u.status=u.status==="suspended"?"active":"suspended"; save(); render();
+  toast("User "+u.status);
+  push("profiles",id,{status:u.status}).catch(()=>{ u.status=prev; save(); render(); toast("Could not save — reverted"); });
+}
+function toggleListing(id){
+  const r=DB.requests.find(x=>x.id===id); if(!r)return;
+  const prev=r.status; r.status=r.status==="removed"?"active":"removed"; save(); render();
+  toast("Listing "+r.status);
+  push("requests",id,{status:r.status}).catch(()=>{ r.status=prev; save(); render(); toast("Could not save — reverted"); });
+}
+function feature(id){
+  const r=DB.requests.find(x=>x.id===id); if(!r)return;
+  const prev=r.featured; r.featured=!r.featured; save(); render();
+  toast(r.featured?"Listing featured ★":"Feature removed");
+  push("requests",id,{featured:r.featured}).catch(()=>{ r.featured=prev; save(); render(); toast("Could not save — reverted"); });
+}
+function resolve(id){
+  const r=DB.reports.find(x=>x.id===id); if(!r)return;
+  const prev=r.status; r.status="resolved"; save(); render();
+  toast("Report resolved");
+  push("reports",id,{status:"resolved"}).catch(()=>{ r.status=prev; save(); render(); toast("Could not save — reverted"); });
+}
+
+function verifyUser(id){
+  const u=DB.users.find(x=>x.id===id); if(!u)return;
+  const prev=u.verified, next=!prev;
+  u.verified=next; save(); render();
+  toast(next?"Account verified ✔":"Account verification removed");
+  (async()=>{
+    try{
+      if(ADMIN_API&&ADMIN_TOKEN){
+        const r=await fetch(ADMIN_API+"/api/admin/users/"+encodeURIComponent(id)+"/status",{method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+ADMIN_TOKEN},body:JSON.stringify({verified:next})});
+        const out=await r.json(); if(!r.ok) throw new Error(out.error||"Could not update account");
+        Object.assign(u,out.user||{verified:next}); save(); render();
+      } else {
+        await push("profiles",id,{verified:next});
+      }
+    }catch(e){ u.verified=prev; save(); render(); toast(e.message||"Could not update account — reverted"); }
+  })();
+}
+function banUser(id){
+  const u=DB.users.find(x=>x.id===id); if(!u)return;
+  const banning=u.status!=="banned"; const prev=u.status; const next=banning?"banned":"active";
+  u.status=next; save(); render();
+  toast(banning?"Account banned":"Account unbanned");
+  (async()=>{
+    try{
+      if(ADMIN_API&&ADMIN_TOKEN){
+        const r=await fetch(ADMIN_API+"/api/admin/users/"+encodeURIComponent(id)+"/status",{method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+ADMIN_TOKEN},body:JSON.stringify({status:next})});
+        const out=await r.json(); if(!r.ok) throw new Error(out.error||"Could not update account");
+        Object.assign(u,out.user||{status:next}); save(); render();
+      } else {
+        await push("profiles",id,{status:next});
+      }
+    }catch(e){ u.status=prev; save(); render(); toast(e.message||"Could not update account — reverted"); }
+  })();
+}
+function createAnnouncement(){
+  const title=document.getElementById("annTitle")?.value.trim(), message=document.getElementById("annMessage")?.value.trim();
+  const force=document.getElementById("annForce")?.value==="true";
+  const target_user_id=document.getElementById("annTarget")?.value||null;
+  if(!title||!message)return toast("Enter a title and message");
+  const row={id:"ann_"+Date.now()+"_"+Math.random().toString(36).slice(2,7),title,message,force,target_user_id,status:"published",created_at:new Date().toISOString()};
+  DB.announcements.unshift(row); save(); render();
+  toast(target_user_id?"Private announcement sent":(force?"Force announcement published":"Announcement published"));
+  if(document.getElementById("annTitle")) document.getElementById("annTitle").value="";
+  if(document.getElementById("annMessage")) document.getElementById("annMessage").value="";
+  (async()=>{
+    try{
+      if(window.ADMIN_API && window.ADMIN_TOKEN){
+        const r=await fetch(window.ADMIN_API+"/api/admin/announcements",{method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+window.ADMIN_TOKEN},body:JSON.stringify({title,message,force,target_user_id})});
+        const out=await r.json(); if(!r.ok) throw new Error(out.error||"failed");
+        if(out.announcement){ Object.assign(row,out.announcement); save(); }
+      } else if(SB){
+        const {error}=await SB.from("announcements").insert(row); if(error) throw error;
+      }
+    }catch(e){
+      DB.announcements=DB.announcements.filter(a=>a.id!==row.id); save(); render();
+      toast("Could not publish — "+(e.message||"try again"));
+    }
+  })();
+}
+function archiveAnnouncement(id){
+  const x=DB.announcements.find(a=>a.id===id); if(!x)return;
+  const prev=x.status; x.status="archived"; save(); render();
+  toast("Announcement archived");
+  if(SB) SB.from("announcements").update({status:"archived"}).eq("id",id).then(({error})=>{ if(error){ x.status=prev; save(); render(); toast("Could not archive — reverted"); } });
+}
+function toggleAdminTheme(){
+  const t=document.documentElement.dataset.theme==="dark"?"light":"dark";
+  document.documentElement.dataset.theme=t;localStorage.setItem("sm_admin_theme",t);
+}
+
+/* ---------- verification & featured-request approvals ---------- */
+function approveVerification(id){
+  const v=DB.verification_requests.find(x=>x.id===id); if(!v)return;
+  const prevV=v.status; v.status="approved";
+  const u=DB.users.find(x=>x.id===v.user_id); const prevU=u?u.verified:undefined;
+  if(u) u.verified=true;
+  save(); render(); toast("Verification approved ✔");
+  Promise.all([push("verification_requests",id,{status:"approved"}), u?push("profiles",u.id,{verified:true}):Promise.resolve()])
+    .catch(()=>{ v.status=prevV; if(u) u.verified=prevU; save(); render(); toast("Could not save — reverted"); });
+}
+function rejectVerification(id){
+  const note=prompt("Reason for rejection (shown to the user):")||"";
+  const v=DB.verification_requests.find(x=>x.id===id); if(!v)return;
+  const prev={status:v.status,admin_note:v.admin_note};
+  v.status="rejected"; v.admin_note=note; save(); render(); toast("Verification rejected");
+  push("verification_requests",id,{status:"rejected",admin_note:note}).catch(()=>{ Object.assign(v,prev); save(); render(); toast("Could not save — reverted"); });
+}
+function approveFeatured(id){
+  const f=DB.featured_requests.find(x=>x.id===id); if(!f)return;
+  const prevF=f.status; f.status="approved";
+  const r=DB.requests.find(x=>x.id===f.request_id); const prevR=r?r.featured:undefined;
+  if(r) r.featured=true;
+  save(); render(); toast("Listing featured ★");
+  Promise.all([push("featured_requests",id,{status:"approved"}), r?push("requests",r.id,{featured:true}):Promise.resolve()])
+    .catch(()=>{ f.status=prevF; if(r) r.featured=prevR; save(); render(); toast("Could not save — reverted"); });
+}
+function rejectFeatured(id){
+  const f=DB.featured_requests.find(x=>x.id===id); if(!f)return;
+  const prev=f.status; f.status="rejected"; save(); render(); toast("Featured request rejected");
+  push("featured_requests",id,{status:"rejected"}).catch(()=>{ f.status=prev; save(); render(); toast("Could not save — reverted"); });
+}
+
+/* ---------- withdrawal approvals ---------- */
+// The requested amount is deducted from the user's wallet_balance up-front (at
+// request time, in index.html). Approving here just confirms the manual bank
+// payout was made; rejecting refunds the amount back to their wallet_balance.
+function approveWithdrawal(id){
+  const w=DB.withdrawals.find(x=>x.id===id); if(!w)return;
+  const prev=w.status; w.status="approved"; save(); render();
+  toast("Marked as paid ✔");
+  push("withdrawals",id,{status:"approved"}).catch(()=>{ w.status=prev; save(); render(); toast("Could not save — reverted"); });
+}
+function rejectWithdrawal(id){
+  const w=DB.withdrawals.find(x=>x.id===id); if(!w)return;
+  const prevW=w.status; w.status="rejected";
+  const u=DB.users.find(x=>x.id===w.user_id); const prevBal=u?u.wallet_balance:undefined;
+  if(u) u.wallet_balance=Number(u.wallet_balance||0)+Number(w.amount||0);
+  save(); render(); toast("Withdrawal rejected — funds refunded to user");
+  Promise.all([push("withdrawals",id,{status:"rejected"}), u?push("profiles",u.id,{wallet_balance:u.wallet_balance}):Promise.resolve()])
+    .catch(()=>{ w.status=prevW; if(u) u.wallet_balance=prevBal; save(); render(); toast("Could not save — reverted"); });
+}
+
+/* ---------- support chat tab ----------
+   Two "pages" in the same panel: a conversation list, and a single thread
+   view with a back button (top right). The thread's DOM shell (header +
+   message container + reply input) is only rebuilt when switching to a
+   different conversation — the 5s poll only refreshes the message bubbles
+   inside #chatThreadBody. This matters: rebuilding the whole shell on every
+   poll used to destroy and recreate the <input>, which stole focus and
+   closed the mobile keyboard while typing a reply. */
+function renderChatTab(q){
+  const qEl=document.getElementById("q");
+  if(qEl) qEl.style.display = (CHAT_VIEW==="thread") ? "none" : "";
+  if(CHAT_VIEW==="thread" && CHAT_SELECTED) renderChatThread();
+  else { CHAT_VIEW="list"; renderChatList(q); }
+}
+function renderChatList(q){
+  const convos={};
+  DB.messages.filter(m=>(m.chat_type||"support")!=="listing").forEach(m=>{ (convos[m.user_id]=convos[m.user_id]||[]).push(m); });
+  let rows=Object.keys(convos).map(uidKey=>{
+    const msgs=convos[uidKey].slice().sort((a,b)=>new Date(a.created_at)-new Date(b.created_at));
+    const last=msgs[msgs.length-1];
+    const unread=msgs.filter(m=>m.sender==="user"&&!m.read_by_admin).length;
+    const u=DB.users.find(x=>x.id===uidKey)||{name:"Unknown user",avatar:"",email:""};
+    return {uid:uidKey,u,last,unread};
+  });
+  if(q) rows=rows.filter(c=>match(c.u,q)||match(c.last,q));
+  rows.sort((a,b)=>new Date(b.last.created_at)-new Date(a.last.created_at));
+  document.getElementById("tableBox").innerHTML = rows.length
+    ? `<div class="chat-list">${rows.map(c=>`
+      <div class="chat-convo" onclick="selectChat('${c.uid}')">
+        <img class="av" src="${esc(c.u.avatar)}"/>
+        <div style="flex:1;min-width:0">
+          <div class="spread"><b>${esc(c.u.name)}</b>${c.unread?`<span class="badge red">${c.unread}</span>`:""}</div>
+          <div class="meta" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(c.last.body)}</div>
+        </div></div>`).join("")}</div>`
+    : `<div class="empty">No messages yet.</div>`;
+}
+function selectChat(uidKey){
+  CHAT_SELECTED=uidKey; CHAT_VIEW="thread"; CHAT_SHELL_FOR=null;
+  renderChatTab();
+}
+function backToChatList(){
+  CHAT_VIEW="list"; CHAT_SELECTED=null; CHAT_SHELL_FOR=null;
+  renderChatTab((document.getElementById("q").value||"").toLowerCase());
+}
+function renderChatThread(){
+  const u=DB.users.find(x=>x.id===CHAT_SELECTED)||{name:"Unknown user",email:""};
+  if(CHAT_SHELL_FOR!==CHAT_SELECTED){
+    document.getElementById("tableBox").innerHTML = `<div class="chat-thread">
+      <div class="chat-thread-head spread">
+        <div><b>${esc(u.name)}</b><div class="meta">${esc(u.email||"")}</div></div>
+        <button class="btn ghost sm" onclick="backToChatList()">Back →</button>
+      </div>
+      <div class="chat-thread-body" id="chatThreadBody"></div>
+      <div class="chat-thread-input"><input id="adminReply" placeholder="Type a reply…" onkeydown="if(event.key==='Enter'){event.preventDefault();sendAdminReply()}"/>
+        <button class="btn" onclick="sendAdminReply()">Send</button></div>
+    </div>`;
+    CHAT_SHELL_FOR=CHAT_SELECTED;
+  }
+  const msgs=DB.messages.filter(m=>m.user_id===CHAT_SELECTED).sort((a,b)=>new Date(a.created_at)-new Date(b.created_at));
+  updateChatMessages(msgs,u);
+  markAdminRead(CHAT_SELECTED,msgs);
+}
+function updateChatMessages(msgs,u){
+  const body=document.getElementById("chatThreadBody"); if(!body) return;
+  body.innerHTML = msgs.length ? msgs.map(m=>
+    `<div class="chat-msg ${m.sender==="admin"?"me":"user"}">${esc(m.body)}<span class="t">${m.sender==="admin"?"You":esc(u.name)} • ${new Date(m.created_at).toLocaleString()}</span></div>`
+  ).join("") : `<div class="empty">No messages yet.</div>`;
+  body.scrollTop=body.scrollHeight;
+}
+async function markAdminRead(uidKey,msgs){
+  const unread=msgs.filter(m=>m.sender==="user"&&!m.read_by_admin);
+  if(!unread.length) return;
+  unread.forEach(m=>m.read_by_admin=true); save(); kpis();
+  if(SB) await SB.from("messages").update({read_by_admin:true}).eq("user_id",uidKey).eq("sender","user").eq("read_by_admin",false);
+}
+async function sendAdminReply(){
+  const input=document.getElementById("adminReply"); if(!input) return;
+  const val=(input.value||"").trim(); if(!val||!CHAT_SELECTED) return;
+  const m={id:cryptoId(),user_id:CHAT_SELECTED,sender:"admin",body:val,read_by_admin:true,read_by_user:false,created_at:new Date().toISOString()};
+  input.value=""; DB.messages.push(m); save();
+  if(SB){ const {error}=await SB.from("messages").insert(m); if(error) toast("Failed to send"); }
+  const msgs=DB.messages.filter(x=>x.user_id===CHAT_SELECTED).sort((a,b)=>new Date(a.created_at)-new Date(b.created_at));
+  const u=DB.users.find(x=>x.id===CHAT_SELECTED)||{name:"Unknown user"};
+  updateChatMessages(msgs,u); // never touches the shell/input — keyboard stays open
+  input.focus();
+}
+
+async function boot(){
+  document.documentElement.dataset.theme=localStorage.getItem("sm_admin_theme")||"light";
+  if(sessionStorage.getItem("sm_admin")!=="1")return;
+  gate.style.display="none"; app.style.display="block";
+  await pull(); render();
+  setInterval(async()=>{
+    if(sessionStorage.getItem("sm_admin")!=="1")return;
+    await pull();
+    render();
+  },4000);
+}
+boot();
+</script>
+</body>
+</html>
